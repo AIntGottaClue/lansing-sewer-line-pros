@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /lp/
+Sitemap: https://lansingsewerline.prosapp.site/sitemap.xml
