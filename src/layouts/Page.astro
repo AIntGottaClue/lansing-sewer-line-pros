@@ -17,6 +17,12 @@ const graph:any[] = [
 ];
 if (!page.legal) graph.push({'@type':'Service','@id':canonical+'#service',name:page.title,serviceType:'Sewer line service information and requests',provider:{'@id':s.origin+'/#organization'},areaServed:{'@type':'City',name:`${s.city}, ${s.state}`}});
 if (page.faqs?.length) graph.push({'@type':'FAQPage','@id':canonical+'#faq',mainEntity:page.faqs.map(([name,text])=>({'@type':'Question',name,acceptedAnswer:{'@type':'Answer',text}}))});
+const srcSentence = (items: [string, string][], cls = '') => {
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const links = items.map(([url, label]) => `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"${cls ? ` class="${cls}"` : ' style="text-decoration:underline"'}>${esc(label.replace(/\s*\([^)]*\)\s*$/, '').replace(/:\s+/, ' '))}</a>`);
+  const list = links.length === 1 ? links[0] : `${links.slice(0, -1).join(', ')} and ${links[links.length - 1]}`;
+  return `The background on this page comes from ${list}.`;
+};
 ---
 <!doctype html>
 <html lang="en">
@@ -63,7 +69,7 @@ if (page.faqs?.length) graph.push({'@type':'FAQPage','@id':canonical+'#faq',main
  {page.landingIndex && <section class="section"><div class="wrap"><div class="grid">{['sewer-backup','tree-roots','old-pipes'].map(route=><article class="card"><h2>{route.replaceAll('-',' ')}</h2><p>Describe the symptoms and request contact about the sewer line. A professional can assess the property and explain the next step.</p><a href={`/lp/${route}/`}>Open request page</a></article>)}</div></div></section>}
  {!isHome && !page.legal && !page.landing && services.some(([,route])=>route===slug) && <section class="section alt"><div class="wrap narrow"><h2>{home.localHeading}</h2>{home.local.map(text=><p>{text}</p>)}</div></section>}
  {!isHome && page.sections?.map(([heading,text],i)=><section class:list={['section',{alt:i%2===1}]}><div class="wrap narrow"><h2>{heading}</h2><p>{text}</p></div></section>)}
- {page.sources?.length && <section class="section"><div class="wrap narrow"><h2>Reference sources</h2><p>These sources explain the local background or official guidance mentioned above. They do not imply an affiliation, and the professional should confirm current rules for the specific work.</p><ul>{page.sources.map(([name,url])=><li><a href={url} rel="noopener noreferrer">{name}</a></li>)}</ul></div></section>}
+ {page.sources?.length && <section class="section"><div class="wrap narrow"><p set:html={srcSentence(page.sources.map(([name,url])=>[url,name]))+' These sources do not imply an affiliation, and the professional should confirm current rules for the specific work.'} /></div></section>}
  {page.faqs?.length > 0 && <section class="section alt"><div class="wrap narrow"><h2>Questions about {s.city} sewer lines</h2>{page.faqs.map(([question,answer])=><details><summary>{question}</summary><p>{answer}</p></details>)}</div></section>}
  {!page.legal && !page.landingIndex && <section class="section contact" id="contact"><div class="wrap contact-grid"><div><h2>Tell us what is happening with your sewer line.</h2><p>Describe the symptoms, when they began and any work already done. A qualified professional can assess the condition and explain which next step fits.</p><p>For an active sewage backup, keep people and pets away from the affected area. Avoid using affected fixtures while arranging professional help.</p><a class="btn" href={call.href} aria-label={`Contact ${s.brand}`}>{call.label}</a></div>
  {!page.landing && <LeadForm formId={formId} location={location} />}</div></section>}
